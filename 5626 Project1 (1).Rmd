@@ -1,0 +1,180 @@
+---
+title: "5626 Project 1"
+author: "Lisa Siefker"
+date: "2025-03-30"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr) 
+library(tidyverse)
+library(ggplot2) 
+```
+
+
+```{r}
+#read data 
+gpa_data <- read.csv("GPAAdmissions.csv", header = TRUE)  
+
+head(gpa_data)
+```
+```{r}
+summary(gpa_data)
+```
+```{r}
+str(gpa_data)
+```
+```{r}
+# get counts
+gpa_data %>% count(Gender)
+gpa_data %>% count(White)
+gpa_data %>% count(Asian)
+gpa_data %>% count(College)
+gpa_data %>% count(Edu_Parent1)
+gpa_data %>% count(Edu_Parent1)
+
+```
+```{r}
+# create a Race category variable
+gpa_data1 <- gpa_data %>%
+  mutate(Race = case_when(
+    White == 1 ~ "White",
+    Asian == 1 ~ "Asian",
+    TRUE ~ "Minority"
+  ))
+
+#head(gpa_data1)
+
+# create scatterplot 
+ggplot(gpa_data1, aes(x = SAT.ACT, y = College_GPA, color = Race)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "SAT/ACT Scores vs. College GPA",
+       x = "SAT/ACT Score",
+       y = "College GPA",
+       color = "Race Category") +
+  theme_minimal()
+
+```
+```{r}
+# create faceted scatterplot by race 
+ggplot(gpa_data1, aes(x = SAT.ACT, y = College_GPA, color = Race)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "SAT/ACT Scores vs. College GPA",
+       x = "SAT/ACT Score",
+       y = "College GPA",
+       color = "Race Category") +
+  theme_minimal() +
+  facet_wrap(~ Race)
+
+```
+```{r}
+# SAT/ACT score by college type
+
+# create faceted scatterplot by college type
+ggplot(gpa_data1, aes(x = SAT.ACT, y = College_GPA, color = College)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "SAT/ACT Scores vs. College GPA",
+       x = "SAT/ACT Score",
+       y = "College GPA",
+       color = "College") +
+  theme_minimal() +
+  facet_wrap(~ College)
+
+```
+
+
+```{r}
+# fit a simple linear regression model 
+
+model_SATACT_College<- lm(College_GPA ~ SAT.ACT, data = gpa_data1)
+
+summary(model_SATACT_College)
+```
+The model indicates that for every 1 point increase in SAT/ACT score, college GPA increases by about 0.001456. Therefore, for a 100 point increase in SAT/ACT score, college GPA increases by 0.1456. The p-value is very close to zero, indicating that the results are statistically significant. Therefore, I would reject the null hypothesis that SAT/ACT score is not a significant predictor of college GPA. 
+
+The R squared value is 0.1294, which means that the model explains only 12.94% of the variance in college GPA. This means that other factors likely play a large role in explaining variance in college GPA. 
+
+```{r}
+plot(model_SATACT_College)
+```
+
+The Residuals v. Fitted and Scale-Location plots shows residuals fairly randomly scattered around zero with no clear pattern, indicating linearity and homoscedasticity.
+
+The QQ Plot shows evidence of non-normality, with deviations at tails and potential outliers. Since the sample size is large, non-normality is not a significant problem. 
+
+```{r}
+# fit a simple linear regression model 
+
+model_HS_College <- lm(College_GPA ~ HSGPA, data = gpa_data1)
+
+summary(model_HS_College)
+```
+```{r}
+plot(model_HS_College) 
+```
+
+
+```{r}
+# convert college to a factor 
+gpa_data1$College <- as.factor(gpa_data1$College)
+
+# fit multiple regression model to predict college GPA using SAT/ACT, high school GPA, parental education and College type
+model_SATACT_HS_Edu_College <- lm(
+  College_GPA ~ SAT.ACT + HSGPA + Edu_Parent1 + Edu_Parent2 + College,
+  data = gpa_data1
+)
+
+summary(model_SATACT_HS_Edu_College)
+```
+
+The R squared of the multiple regression model is 0.319, which is an improvement over the simple linear regression model. However, the model only explains about 32% of variance in college GPA. 
+
+The model shows that high school GPA is the strongest predictor of ollege GPA. For every one unit increase in high school GPA, college GPA increases 0.64. 
+
+SAT/ACT scores have a significant but modest effect on college GPA. A 200 point increase in SAT/ACT score results in a 0.18 increase in college GPA. 
+
+68% variance suggests that other predictors are missing from the model (e.g., study habits or course load)
+
+```{r}
+plot(model_SATACT_HS_Edu_College)
+```
+```{r}
+# convert college to a factor 
+gpa_data1$College <- as.factor(gpa_data1$College)
+
+# fit multiple regression model to predict college GPA using SAT/ACT, high school GPA
+model_HS_SATACT <- lm(
+  College_GPA ~ SAT.ACT + HSGPA, 
+  data = gpa_data1
+)
+
+summary(model_HS_SATACT)
+```
+
+```{r}
+# use anova to compare SAT.ACT model to SAT.ACT + HSGPA model 
+anova(model_SATACT_College, model_HS_SATACT)
+```
+
+```{r}
+# add interaction term to model that includes SAT.ACT and HSGPA
+# convert college to a factor 
+gpa_data1$College <- as.factor(gpa_data1$College)
+
+# fit multiple regression model to predict college GPA using SAT/ACT, high school GPA
+model_interaction <- lm(
+  College_GPA ~ SAT.ACT + HSGPA + SAT.ACT*HSGPA, 
+  data = gpa_data1
+)
+
+summary(model_interaction)
+
+```
+No improvement with the interaction model 
