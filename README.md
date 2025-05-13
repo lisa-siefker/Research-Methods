@@ -4,7 +4,7 @@ Experts who support mandatory test requirements argue that test scores provide a
 In this study, I examine student data to help answer the question of whether high school GPA is just as effective at predicting college GPA as standardized test scores. Specifically, I separately analyze whether high school GPA and SAT/ACT scores are significant predictors of college GPA across white, Asian, and minority populations. 
 
 ## Methods 
-## Data
+# Data
 This study used visualization and statistical analysis to examine data from 1,528 students at a selective four-year U.S. college. For each student, the following relevant information was collected: 
 •	Parental education levels for two parents
 •	Student race (white, Asian, or minority) 
